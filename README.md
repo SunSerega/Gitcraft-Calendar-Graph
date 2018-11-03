@@ -10,8 +10,8 @@
 ![image](https://user-images.githubusercontent.com/27270190/47954712-fcd8fc00-df95-11e8-83fb-0417fb3ce2da.png)
 
 4. Download this repository as .zip and unpack;
-5. Edit `Settings.cfg` with any text exitor;
-6. Save image of tiles in `in.bmp` (prefered size =(53;7) );
+5. Edit `Settings.cfg` with any text editor;
+6. Save image of tiles in `in.bmp` (preferred size =(53;7) );
 7. Execute `conv.exe`, you will get .txt file (it should open on itself);
 8. Ctrl+A, Ctrl+C;
 9. RMB on what you got in `3.` and "edit as HTML":
