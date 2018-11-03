@@ -21,35 +21,77 @@ begin
     nc.b.ToString('x').PadLeft(2, '0');
 end;
 
+type
+  dow = (Sun, Mon, Tue, Wed, Thu, Fri, Sat);
+  moy = (Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec);
+
 begin
   try
     
-    var Settings := new Dictionary<string, object>;
+    var cfg := new class(
+      
+      rsz := true,
+      ccl := true,
+      
+      dx := 0,
+      dy := 0,
+      cw := 0,
+      ch := 0,
+      
+      amd := true,
+      
+      sm := 0,
+      mxs := new integer[12],
+      my := 0,
+      
+      sd := 0,
+      dds := new boolean[7],
+      ddys := new integer[7],
+      ddx := 0
+      
+    );
+    
+    
     with new class(sr := new System.IO.StreamReader(System.IO.File.OpenRead('settings.cfg'))) do
       while not sr.EndOfStream do
       begin
         var l := sr.ReadLine.Split('=');
+        if l[0] = '' then continue;
         l[0] := l[0].TrimEnd(#9);
         case l[0] of
           
-          'convert colors': Settings['ccl'] := boolean.Parse(l[1]);
-          'resize':         Settings['rsz'] := boolean.Parse(l[1]);
-        
-        else raise new Exception('wrong setting name');//делать свои типы исключений? неее)))) не в такой проге
+          'convert colors': cfg.ccl := boolean.Parse(l[1]);
+          'resize':         cfg.rsz := boolean.Parse(l[1]);
+          
+          'dx':             cfg.dx := l[1].ToInteger;
+          'dy':             cfg.dy := l[1].ToInteger;
+          'cw':             cfg.cw := l[1].ToInteger;
+          'ch':             cfg.ch := l[1].ToInteger;
+          
+          'add m/d':        cfg.amd := boolean.Parse(l[1]);
+          
+          'start month':    cfg.sm := l[1].ToInteger;
+          'dow-display':    cfg.dds := l[1].Split(' ').ConvertAll(boolean.Parse);
+          'month-x''s':     cfg.mxs := l[1].ToIntegers;
+          'month-y':        cfg.my := l[1].ToInteger;
+          
+          'start day':      cfg.sd := l[1].ToInteger;
+          'day-y''s':       cfg.ddys := l[1].ToIntegers;
+          'day-x':          cfg.ddx := l[1].ToInteger;
+          
+        else raise new Exception($'wrong setting name: {l[0]}');//делать свои типы исключений? неее)))) не в такой проге
         end;
       end;
     
     
     
     var b := new Bitmap('in.bmp');
-    if boolean(Settings['rsz']) then b := new Bitmap(b, 53, 7);
+    if cfg.rsz then b := new Bitmap(b, 53, 7);
     
     
     
     var sw := System.IO.File.CreateText('temp.otp.txt');
     sw.WriteLine('<g transform="translate(16, 20)">');
-    
-    var ccl := boolean(Settings['ccl']);
     
     for var x := 0 to b.Width - 1 do
     begin
@@ -57,39 +99,36 @@ begin
       
       for var y := 0 to b.Height - 1 do
         sw.WriteLine(
- 	        $'<rect class="day" width="8" height="8" ' +
- 	        $'x="{11-x}" ' +
- 	        $'y="{y*10}" ' +
- 	        $'fill="#{ccl?find_color(b.GetPixel(x,y)):(b.GetPixel(x,y).ToArgb and $FFFFFF).ToString(''x'').PadLeft(6,''0'')}" ' +
+ 	        $'<rect class="day" width="{cfg.cw}" height="{cfg.ch}" ' +
+ 	        $'x="{cfg.dx-x}" ' +
+ 	        $'y="{y*cfg.dy}" ' +
+ 	        $'fill="#{cfg.ccl?find_color(b.GetPixel(x,y)):(b.GetPixel(x,y).ToArgb and $FFFFFF).ToString(''x'').PadLeft(6,''0'')}" ' +
  	        $'data-count="0" data-date="2017-10-29"></rect>');
       
       sw.WriteLine('</g>');
     end;
     
-    sw.WriteLine(
-    	   '<text x="21" y="-8" class="month">Nov</text>'
-    	#10'<text x="61" y="-8" class="month">Dec</text>'
-    	#10'<text x="111" y="-8" class="month">Jan</text>'
-    	#10'<text x="151" y="-8" class="month">Feb</text>'
-    	#10'<text x="191" y="-8" class="month">Mar</text>'
-    	#10'<text x="231" y="-8" class="month">Apr</text>'
-    	#10'<text x="281" y="-8" class="month">May</text>'
-    	#10'<text x="321" y="-8" class="month">Jun</text>'
-    	#10'<text x="361" y="-8" class="month">Jul</text>'
-    	#10'<text x="411" y="-8" class="month">Aug</text>'
-    	#10'<text x="451" y="-8" class="month">Sep</text>'
-    	#10'<text x="501" y="-8" class="month">Oct</text>'
-    	#10'<text text-anchor="start" class="wday" dx="-12" dy="8" style="display: none;">Sun</text>'
-    	#10'<text text-anchor="start" class="wday" dx="-12" dy="17">Mon</text>'
-    	#10'<text text-anchor="start" class="wday" dx="-12" dy="32" style="display: none;">Tue</text>'
-    	#10'<text text-anchor="start" class="wday" dx="-12" dy="37">Wed</text>'
-    	#10'<text text-anchor="start" class="wday" dx="-12" dy="57" style="display: none;">Thu</text>'
-    	#10'<text text-anchor="start" class="wday" dx="-12" dy="57">Fri</text>'
-    	#10'<text text-anchor="start" class="wday" dx="-12" dy="81" style="display: none;">Sat</text>'
-      #10'</g>'
-    );
     
     
+    if cfg.amd then
+    begin
+      
+      for var i := 0 to 11 do
+        sw.WriteLine($'<text x="{cfg.mxs[i]}" y="{cfg.my}" class="month">{moy.GetName(typeof(moy),(cfg.sm+i) mod 12)}</text>');
+      
+      for var i := 0 to 6 do
+      begin
+        sw.Write($'<text text-anchor="start" class="wday" ');
+        sw.Write($'dx="{cfg.ddx}" dy="{cfg.ddys[i]}"');
+        if not cfg.dds[i] then sw.Write($' style="display: none;"');
+        sw.WriteLine($'>{dow.GetName(typeof(dow),(cfg.sd+i) mod 7)}</text>');
+      end;
+      
+    end;
+    
+    
+    
+    sw.WriteLine('</g>');
     
     sw.Flush;
     Exec('temp.otp.txt');
