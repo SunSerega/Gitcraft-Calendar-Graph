@@ -95,7 +95,7 @@ begin
     
     for var x := 0 to b.Width - 1 do
     begin
-      sw.WriteLine($'<g transform="translate({x*11}, 0)">');
+      sw.WriteLine($'<g transform="translate({x*cfg.dx}, 0)">');
       
       for var y := 0 to b.Height - 1 do
         sw.WriteLine(
