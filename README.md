@@ -21,3 +21,9 @@
 10. Ctrl+a, Ctrl+V, Ctrl+Enter;
 
 11. %PROFIT%
+
+Also..
+![image](https://user-images.githubusercontent.com/27270190/47954875-8e496d80-df98-11e8-9674-63bb533d7f48.png)
+
+yeah, you can do this too ;)
+if it's too big - just change parameters of svg root
