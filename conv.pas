@@ -21,6 +21,12 @@ begin
     nc.b.ToString('x').PadLeft(2, '0');
 end;
 
+function stbool(s: string): boolean;
+begin
+  if not boolean.TryParse(s, Result) then
+    Result := s.ToInteger<>0;
+end;
+
 type
   dow = (Sun, Mon, Tue, Wed, Thu, Fri, Sat);
   moy = (Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec);
@@ -60,18 +66,18 @@ begin
         l[0] := l[0].TrimEnd(#9);
         case l[0] of
           
-          'convert colors': cfg.ccl := boolean.Parse(l[1]);
-          'resize':         cfg.rsz := boolean.Parse(l[1]);
+          'convert colors': cfg.ccl := stbool(l[1]);
+          'resize':         cfg.rsz := stbool(l[1]);
           
           'dx':             cfg.dx := l[1].ToInteger;
           'dy':             cfg.dy := l[1].ToInteger;
           'cw':             cfg.cw := l[1].ToInteger;
           'ch':             cfg.ch := l[1].ToInteger;
           
-          'add m/d':        cfg.amd := boolean.Parse(l[1]);
+          'add m/d':        cfg.amd := stbool(l[1]);
           
           'start month':    cfg.sm := l[1].ToInteger;
-          'dow-display':    cfg.dds := l[1].Split(' ').ConvertAll(boolean.Parse);
+          'dow-display':    cfg.dds := l[1].Split(' ').ConvertAll(stbool);
           'month-x''s':     cfg.mxs := l[1].ToIntegers;
           'month-y':        cfg.my := l[1].ToInteger;
           
